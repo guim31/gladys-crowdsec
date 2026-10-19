@@ -1,0 +1,45 @@
+{
+  "new": [
+    {
+      "duration": "56m56s",
+      "id": 2,
+      "origin": "cscli",
+      "scenario": "manual 'captcha' from 'localhost'",
+      "scope": "Range",
+      "type": "captcha",
+      "uuid": "361e74fc-2df9-4d9c-8cfe-ca72e890d21e",
+      "value": "198.51.100.0/24"
+    },
+    {
+      "duration": "5h58m38s",
+      "id": 3,
+      "origin": "crowdsec",
+      "scenario": "crowdsecurity/ssh-bf",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "241fafb8-e60e-4e7e-af27-db89cf4b6259",
+      "value": "203.0.113.7"
+    },
+    {
+      "duration": "5h58m38s",
+      "id": 4,
+      "origin": "crowdsec",
+      "scenario": "crowdsecurity/ssh-bf_user-enum",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "accc8b3e-84d6-4006-b5cd-0648feb2c187",
+      "value": "203.0.113.7"
+    },
+    {
+      "duration": "3h59m59s",
+      "id": 5,
+      "origin": "cscli",
+      "scenario": "manual test",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "bfb72814-6184-4af8-8726-ac8acbbb1216",
+      "value": "192.0.2.50"
+    }
+  ],
+  "deleted": []
+}

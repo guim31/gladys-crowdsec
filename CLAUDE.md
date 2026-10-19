@@ -31,16 +31,20 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only, shutdown
+src/app.js                        registers every SDK handler on the hub (tests use it too)
+src/hub.js                        reads the LAPI on its own timer, states, scene events, unban
+src/crowdsec/client.js            LAPI client: decision stream, machine login, alerts, deletion
+src/devices.js                    the "CrowdSec" device: features, values
+src/widgets.js                    dashboard widget `decisions`
+src/scenes.js                     scene actions `get_status`, `delete_decision`
+src/texts.js                      every text sent to Gladys, in en/fr/de/es
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+src/store.js, src/problems.js     /data persistence, one log line per lasting failure
+gladys-assistant-integration.json manifest: name, config_schema, triggers, actions, widget...
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, against the SDK's fake Gladys and a fake LAPI
+test/fixtures/crowdsec/           real answers of CrowdSec v1.8.1 (community one hand-written)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +74,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German ("du") and Spanish
+  ("usted"): action messages, widget, manifest texts, and `docs/en.md`,
+  `docs/fr.md`, `docs/de.md`, `docs/es.md`, kept in sync
+  (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +239,42 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## CrowdSec (propre à ce dépôt)
+
+Vérifié contre CrowdSec v1.8.1 en Docker (`crowdsecurity/crowdsec`, `DISABLE_ONLINE_API=true`, force brute SSH
+rejouée par `crowdsec -dsn file://… -type syslog -no-api`), le 19/10/2026.
+
+- **Deux accès** : la clé de bouncer (`X-Api-Key`, lecture seule) ne lit que les décisions ; les alertes et la
+  suppression demandent un compte machine (`POST /v1/watchers/login` → JWT d'une heure). Une clé de bouncer sur
+  `/v1/alerts` répond 401 `cookie token is empty`.
+- **Piège** : le login machine répond **401 « incorrect Username or Password » quand l'User-Agent est `node`**
+  (celui de `fetch` par défaut), même avec le bon mot de passe ; `gladys-crowdsec/x.y.z` passe. Le client envoie
+  toujours `USER_AGENT`. Le faux LAPI des tests reproduit ce refus.
+- **Flux de décisions** (`/v1/decisions/stream`) : `startup=true` donne tout, sans lui le delta depuis le dernier
+  appel **de cette clé** (l'état est côté serveur). Un delta perdu (réponse coupée) ne revient jamais : le hub refait
+  une lecture complète après toute erreur et toutes les heures. `new` vaut `null` quand il est vide. Les décisions
+  supprimées ou expirées arrivent dans `deleted` avec leur `id` et une durée négative. Par défaut le flux ne porte
+  que les portées `Ip` et `Range`.
+- `duration` est le **temps restant** en notation Go (`3h59m50s`, `-4s`), pas la durée initiale.
+- Origines : `crowdsec` (scénario), `cscli`, `cscli-import`, `console`… sont « locales » ; `CAPI` et `lists` sont
+  la communauté (des dizaines de milliers : jamais d'événement de scène, seulement un compteur).
+- **Alertes** : `since` filtre sur `start_at` (heure du journal, pas de l'insertion : un journal rejoué donne des
+  dates futures). `include_capi=false` écarte les alertes de la liste communautaire ; le client écarte aussi
+  celles dont la portée est `lists:…` ou `Community blocklist`. Chaque alerte porte ses `events` (lourds) : le hub
+  ne garde que l'essentiel, lit la dernière heure à chaque cycle et 24 h une fois par heure. Le pays (`source.cn`)
+  n'existe que dans les alertes, et seulement avec le parser `geoip-enrich` : pas de pays sans compte machine.
+- `DELETE /v1/decisions?ip=…` (ou `range=…`) répond `{"nbDeleted":"1"}` (une **chaîne**). Par défaut
+  (`contains=true`) il supprime les décisions qui **contiennent** la cible : 0 pour une plage, et toute une plage
+  bannie pour une adresse. Le client envoie `contains=false` (vérifié sur la 1.8.1 : 0 contre 3 décisions).
+- **Déduplication** : sans `dedup=false`, le flux ne donne qu'une décision par adresse (la plus longue). Un ban
+  local derrière un ban CAPI de plusieurs jours n'arriverait jamais (vérifié : 2 décisions sur 3). Le client
+  envoie `dedup=false`.
+- Nouveauté : toute décision locale d'un delta (le flux ne donne que les créées depuis l'appel précédent) ; à une
+  lecture complète, seulement celles au-dessus du dernier id vu (`/data`). Un delta aux ids inférieurs à la marque =
+  base remise à zéro. Alertes : au-dessus de la marque à la première lecture, puis toute alerte pas encore vue (une
+  alerte au `start_at` ancien arrive en retard mais arrive ; lecture courante sur 3 h). Pas d'événement au tout premier démarrage. 20 événements par lecture au
+  plus.
+- Journaux : jamais d'adresse complète au niveau info (`maskAddress`) ; un nouveau bannissement s'écrit en debug.
+- `test/fixtures/crowdsec/stream-community.json` est écrit à la main (une instance de test hors ligne n'a pas de
+  liste communautaire), au format exact des réponses réelles.

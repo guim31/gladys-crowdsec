@@ -1,41 +1,67 @@
 // -----------------------------------------------------------------------------
-// Scene actions (SDK v0.14+, Gladys 5.1+).
+// Scene action handlers (manifest `scene_actions`, Gladys 5.1+).
 //
-// A scene action is an OPERATION a scene author places in a scene, with
-// parameters and a result: "identify this device", "take a snapshot", "clean
-// these rooms". Each one is declared in the manifest `scene_actions` field
-// (key, label, `fields` in the config_schema grammar, scalar `outputs`) and
-// handled here, keyed by that same `key`; index.js registers every entry with
-// `gladys.onSceneAction(key, ...)`.
-//
-// Scene TRIGGERS are the other direction ("this happened"): they are fired by
-// the device that observes the event, see src/devices/motionSensor.js.
-//
-// The rules that matter:
-//   - `fields` arrive RESOLVED: scene variables substituted, defaults applied,
-//     validated by the core; a `"source": "devices"` field is the chosen
-//     device external_id;
-//   - resolve an object of the declared `outputs` (scalars only), readable by
-//     the following actions of the scene, or `undefined` for none. Keys not
-//     declared in the manifest are dropped by the core;
-//   - throwing fails THIS action only: the scene logs it and continues. A
-//     scene action is never a condition: return an output and let the scene
-//     author gate on it;
-//   - never fire a scene event as a consequence of a received action: a scene
-//     bound to that event would loop through the integration.
+// - get_status: sums up CrowdSec for a message (decisions, alerts, the latest
+//   ban), what a condition on the device cannot put in words. It reads the
+//   LAPI again when the last read is older than 15 seconds.
+// - delete_decision: unbans an address or a range. Off unless enabled in the
+//   configuration, and only with a machine account (the bouncer key is
+//   read-only). The one command of the integration: a scene that unbans on a
+//   condition is the user's choice, a mistake only lets an attacker in again
+//   until CrowdSec catches it anew.
 // -----------------------------------------------------------------------------
 
-import { createLogger } from '@gladysassistant/integration-sdk';
-import { signalDevice } from './devices/index.js';
-
-const logger = createLogger({ name: 'scenes' });
+import { shortScenario } from './widgets.js';
+import { REPORT_TEXT, UNBAN_TEXT, labelled } from './texts.js';
 
 export const SCENE_ACTIONS = {
-  // The ack is awaited under the action's `timeout_seconds` (15 s in the
-  // manifest), counted from the moment the scene reaches the action.
-  async identify_device(gladys, { fields, config }) {
-    logger.info(`Scene action identify_device <- ${fields.device}`);
-    const signalled = await signalDevice(gladys, fields.device, config);
-    return { signalled };
+  async get_status(hub) {
+    if (!hub.client) {
+      hub.assertReadable(); // no address or key: the configuration to fix
+    }
+    await hub.refreshIfStale();
+    const language = hub.config.language;
+    const text = REPORT_TEXT[language] ?? REPORT_TEXT.en;
+    const latest = hub.latestDecisions(1)[0];
+    if (hub.failing || !hub.reachable) {
+      // "CrowdSec does not answer" is an answer: the scene goes on with it.
+      return {
+        reachable: false,
+        local_decisions: 0,
+        community_decisions: 0,
+        alerts_24h: 0,
+        last_ip: '',
+        last_scenario: '',
+        sentence: `${labelled('CrowdSec', text.unreachable, language)}.`,
+      };
+    }
+    const parts = [text.local(hub.local.size), text.community(hub.community.size)];
+    if (hub.alertsKnown) {
+      parts.push(text.alerts(hub.alerts.size));
+    }
+    return {
+      reachable: true,
+      local_decisions: hub.local.size,
+      community_decisions: hub.community.size,
+      alerts_24h: hub.alertsKnown ? hub.alerts.size : 0,
+      last_ip: latest?.value ?? '',
+      last_scenario: hub.latestScenario(),
+      sentence: `${labelled('CrowdSec', parts.join(', '), language)}${
+        latest ? ` (${latest.value}, ${shortScenario(latest.scenario)})` : ''
+      }.`,
+    };
+  },
+
+  async delete_decision(hub, { fields = {} }) {
+    const { deleted, value } = await hub.unban(fields.ip);
+    const language = hub.config.language;
+    return {
+      deleted,
+      sentence: `${labelled(
+        'CrowdSec',
+        (UNBAN_TEXT[language] ?? UNBAN_TEXT.en).deleted(deleted, value),
+        language,
+      )}.`,
+    };
   },
 };

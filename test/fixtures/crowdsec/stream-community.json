@@ -1,0 +1,45 @@
+{
+  "new": [
+    {
+      "duration": "167h59m10s",
+      "id": 101,
+      "origin": "CAPI",
+      "scenario": "crowdsecurity/http-probing",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "3f1d2a40-0000-4000-8000-000000000101",
+      "value": "198.18.0.1"
+    },
+    {
+      "duration": "167h59m10s",
+      "id": 102,
+      "origin": "CAPI",
+      "scenario": "crowdsecurity/ssh-bf",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "3f1d2a40-0000-4000-8000-000000000102",
+      "value": "198.18.0.2"
+    },
+    {
+      "duration": "167h59m10s",
+      "id": 103,
+      "origin": "CAPI",
+      "scenario": "crowdsecurity/http-bad-user-agent",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "3f1d2a40-0000-4000-8000-000000000103",
+      "value": "198.18.0.3"
+    },
+    {
+      "duration": "23h59m10s",
+      "id": 104,
+      "origin": "lists",
+      "scenario": "firehol_cybercrime",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "3f1d2a40-0000-4000-8000-000000000104",
+      "value": "198.18.0.4"
+    }
+  ],
+  "deleted": null
+}
