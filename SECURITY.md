@@ -30,6 +30,16 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration stores in Gladys (not in the container) the address of the
+CrowdSec Local API, the bouncer key and, optionally, the login and password of
+a machine account. Under `/data` it only keeps the highest decision and alert
+ids already seen, the last scenario and whether the Local API answered. It
+talks to the Local API only, on the local network; nothing goes to the
+internet. The bouncer key is read-only; the machine account can delete
+decisions, and the integration only does it from the "Delete a decision"
+scene action, disabled by default. Keys, passwords, tokens and full IP
+addresses never reach the logs at the info level.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and CrowdSec and the other third-party services the integration talks to.

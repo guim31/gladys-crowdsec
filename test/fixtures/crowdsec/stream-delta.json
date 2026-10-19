@@ -1,0 +1,26 @@
+{
+  "new": [
+    {
+      "duration": "6h18m33s",
+      "id": 6,
+      "origin": "crowdsec",
+      "scenario": "crowdsecurity/ssh-bf",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "f52c717d-ba78-47f9-a218-77531928c972",
+      "value": "203.0.113.9"
+    }
+  ],
+  "deleted": [
+    {
+      "duration": "-4s",
+      "id": 5,
+      "origin": "cscli",
+      "scenario": "manual test",
+      "scope": "Ip",
+      "type": "ban",
+      "uuid": "bfb72814-6184-4af8-8726-ac8acbbb1216",
+      "value": "192.0.2.50"
+    }
+  ]
+}

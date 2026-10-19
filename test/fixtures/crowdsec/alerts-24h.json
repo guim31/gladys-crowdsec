@@ -1,0 +1,361 @@
+[
+  {
+    "capacity": 0,
+    "created_at": "2026-10-19T19:51:27Z",
+    "decisions": [
+      {
+        "duration": "3h59m59s",
+        "id": 5,
+        "origin": "cscli",
+        "scenario": "manual test",
+        "scope": "Ip",
+        "simulated": false,
+        "type": "ban",
+        "value": "192.0.2.50"
+      }
+    ],
+    "events": null,
+    "events_count": 1,
+    "id": 5,
+    "kind": "cscli",
+    "labels": null,
+    "leakspeed": "0",
+    "machine_id": "localhost",
+    "message": "manual test",
+    "remediation": true,
+    "scenario": "manual test",
+    "scenario_hash": "",
+    "scenario_version": "",
+    "simulated": false,
+    "source": { "ip": "192.0.2.50", "scope": "Ip", "value": "192.0.2.50" },
+    "start_at": "2026-10-19T19:51:27Z",
+    "stop_at": "2026-10-19T19:51:27Z",
+    "uuid": "42de51e7-57c9-4618-a983-6b5bc3427660"
+  },
+  {
+    "capacity": 5,
+    "created_at": "2026-10-19T19:48:52Z",
+    "decisions": [
+      {
+        "duration": "5h58m38s",
+        "id": 4,
+        "origin": "crowdsec",
+        "scenario": "crowdsecurity/ssh-bf_user-enum",
+        "scope": "Ip",
+        "simulated": false,
+        "type": "ban",
+        "value": "203.0.113.7"
+      }
+    ],
+    "events": [
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin1" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:01Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:01 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin2" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:02Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:02 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin3" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:03Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:03 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin4" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:04Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:04 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin5" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:05Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:05 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin6" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:06Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:06 +0000 UTC"
+      }
+    ],
+    "events_count": 6,
+    "id": 4,
+    "kind": "crowdsec",
+    "labels": null,
+    "leakspeed": "10s",
+    "machine_id": "localhost",
+    "message": "Ip 203.0.113.7 performed 'crowdsecurity/ssh-bf_user-enum' (6 events over 5s) at 2026-10-19 21:50:06 +0000 UTC",
+    "meta": [
+      {
+        "key": "target_user",
+        "value": "[\"admin1\",\"admin2\",\"admin3\",\"admin4\",\"admin5\",\"admin6\"]"
+      }
+    ],
+    "remediation": true,
+    "scenario": "crowdsecurity/ssh-bf_user-enum",
+    "scenario_hash": "242f36684d66bbae3044e576b7cfffef62d5323465f3f74f87923167c6d93356",
+    "scenario_version": "0.3",
+    "simulated": false,
+    "source": { "as_number": "0", "ip": "203.0.113.7", "scope": "Ip", "value": "203.0.113.7" },
+    "start_at": "2026-10-19T21:50:01Z",
+    "stop_at": "2026-10-19T21:50:06Z",
+    "uuid": "c4385ef6-d5c9-48bd-b8d9-e52f24afdd5c"
+  },
+  {
+    "capacity": 5,
+    "created_at": "2026-10-19T19:48:52Z",
+    "decisions": [
+      {
+        "duration": "5h58m38s",
+        "id": 3,
+        "origin": "crowdsec",
+        "scenario": "crowdsecurity/ssh-bf",
+        "scope": "Ip",
+        "simulated": false,
+        "type": "ban",
+        "value": "203.0.113.7"
+      }
+    ],
+    "events": [
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin1" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:01Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:01 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin2" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:02Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:02 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin3" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:03Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:03 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin4" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:04Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:04 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin5" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:05Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:05 +0000 UTC"
+      },
+      {
+        "meta": [
+          { "key": "ASNNumber", "value": "0" },
+          { "key": "IsInEU", "value": "false" },
+          { "key": "datasource_path", "value": "/tmp/auth.log" },
+          { "key": "datasource_type", "value": "file" },
+          { "key": "log_type", "value": "ssh_failed-auth" },
+          { "key": "machine", "value": "gladyshost" },
+          { "key": "service", "value": "ssh" },
+          { "key": "source_ip", "value": "203.0.113.7" },
+          { "key": "target_user", "value": "admin6" },
+          { "key": "timestamp", "value": "2026-10-19T21:50:06Z" }
+        ],
+        "timestamp": "2026-10-19 21:50:06 +0000 UTC"
+      }
+    ],
+    "events_count": 6,
+    "id": 3,
+    "kind": "crowdsec",
+    "labels": null,
+    "leakspeed": "10s",
+    "machine_id": "localhost",
+    "message": "Ip 203.0.113.7 performed 'crowdsecurity/ssh-bf' (6 events over 5s) at 2026-10-19 21:50:06 +0000 UTC",
+    "meta": [
+      {
+        "key": "target_user",
+        "value": "[\"admin1\",\"admin2\",\"admin3\",\"admin4\",\"admin5\",\"admin6\"]"
+      }
+    ],
+    "remediation": true,
+    "scenario": "crowdsecurity/ssh-bf",
+    "scenario_hash": "242f36684d66bbae3044e576b7cfffef62d5323465f3f74f87923167c6d93356",
+    "scenario_version": "0.3",
+    "simulated": false,
+    "source": { "as_number": "0", "ip": "203.0.113.7", "scope": "Ip", "value": "203.0.113.7" },
+    "start_at": "2026-10-19T21:50:01Z",
+    "stop_at": "2026-10-19T21:50:06Z",
+    "uuid": "5f61115b-3ca2-43e2-8421-7aacfc57aefc"
+  },
+  {
+    "capacity": 0,
+    "created_at": "2026-10-19T19:48:28Z",
+    "decisions": [
+      {
+        "duration": "56m56s",
+        "id": 2,
+        "origin": "cscli",
+        "scenario": "manual 'captcha' from 'localhost'",
+        "scope": "Range",
+        "simulated": false,
+        "type": "captcha",
+        "value": "198.51.100.0/24"
+      }
+    ],
+    "events": null,
+    "events_count": 1,
+    "id": 2,
+    "kind": "cscli",
+    "labels": null,
+    "leakspeed": "0",
+    "machine_id": "localhost",
+    "message": "manual 'captcha' from 'localhost'",
+    "remediation": true,
+    "scenario": "manual 'captcha' from 'localhost'",
+    "scenario_hash": "",
+    "scenario_version": "",
+    "simulated": false,
+    "source": { "ip": "198.51.100.0/24", "scope": "Range", "value": "198.51.100.0/24" },
+    "start_at": "2026-10-19T19:48:24Z",
+    "stop_at": "2026-10-19T19:48:24Z",
+    "uuid": "aaa89ecc-3c9f-473e-96ba-eae2bc553402"
+  },
+  {
+    "capacity": 0,
+    "created_at": "2026-10-19T19:48:17Z",
+    "decisions": [
+      {
+        "duration": "-22s",
+        "id": 1,
+        "origin": "cscli",
+        "scenario": "manual test",
+        "scope": "Ip",
+        "simulated": false,
+        "type": "ban",
+        "value": "192.0.2.50"
+      }
+    ],
+    "events": null,
+    "events_count": 1,
+    "id": 1,
+    "kind": "cscli",
+    "labels": null,
+    "leakspeed": "0",
+    "machine_id": "localhost",
+    "message": "manual test",
+    "remediation": true,
+    "scenario": "manual test",
+    "scenario_hash": "",
+    "scenario_version": "",
+    "simulated": false,
+    "source": { "ip": "192.0.2.50", "scope": "Ip", "value": "192.0.2.50" },
+    "start_at": "2026-10-19T19:48:12Z",
+    "stop_at": "2026-10-19T19:48:12Z",
+    "uuid": "09777cec-5760-45f2-be3a-594e29eefac6"
+  }
+]

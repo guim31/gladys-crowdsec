@@ -1,177 +1,685 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "CrowdSec",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "CrowdSec in Gladys: banned addresses, alerts and attacks in your scenes and on your dashboard.",
+    "fr": "CrowdSec dans Gladys : adresses bannies, alertes et attaques dans vos scènes et au tableau de bord.",
+    "de": "CrowdSec in Gladys: gesperrte Adressen, Alarme und Angriffe in deinen Szenen und im Dashboard.",
+    "es": "CrowdSec en Gladys: direcciones bloqueadas, alertas y ataques en sus escenas y en el panel."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-crowdsec:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-crowdsec/main/cover.png",
+  "categories": ["security", "network"],
+  "transports": ["local"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your CrowdSec Local API",
+        "fr": "Votre API locale CrowdSec",
+        "de": "Deine lokale CrowdSec-API",
+        "es": "Su API local de CrowdSec"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "On the CrowdSec machine, create a bouncer key with: cscli bouncers add gladys. The Local API listens on port 8080; it must be reachable from Gladys (listen_uri 0.0.0.0:8080).",
+        "fr": "Sur la machine CrowdSec, créez une clé de bouncer avec : cscli bouncers add gladys. L'API locale écoute sur le port 8080 ; elle doit être joignable depuis Gladys (listen_uri 0.0.0.0:8080).",
+        "de": "Erstelle auf dem CrowdSec-Rechner einen Bouncer-Schlüssel mit: cscli bouncers add gladys. Die lokale API lauscht auf Port 8080 und muss von Gladys aus erreichbar sein (listen_uri 0.0.0.0:8080).",
+        "es": "En la máquina de CrowdSec, cree una clave de bouncer con: cscli bouncers add gladys. La API local escucha en el puerto 8080 y debe ser accesible desde Gladys (listen_uri 0.0.0.0:8080)."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/guim31/gladys-crowdsec/blob/main/docs/en.md",
+          "label": {
+            "en": "Setup guide",
+            "fr": "Guide d'installation",
+            "de": "Einrichtungsanleitung",
+            "es": "Guía de instalación"
+          }
+        },
+        {
+          "url": "https://docs.crowdsec.net/docs/local_api/intro",
+          "label": {
+            "en": "CrowdSec Local API",
+            "fr": "API locale de CrowdSec",
+            "de": "Lokale CrowdSec-API",
+            "es": "API local de CrowdSec"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Local API address",
+        "fr": "Adresse de l'API locale",
+        "de": "Adresse der lokalen API",
+        "es": "Dirección de la API local"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "description": {
+        "en": "The address of the CrowdSec Local API, port 8080 by default.",
+        "fr": "L'adresse de l'API locale de CrowdSec, port 8080 par défaut.",
+        "de": "Die Adresse der lokalen CrowdSec-API, standardmäßig Port 8080.",
+        "es": "La dirección de la API local de CrowdSec, puerto 8080 por defecto."
+      },
+      "placeholder": {
+        "en": "e.g. http://192.168.1.2:8080",
+        "fr": "ex. http://192.168.1.2:8080",
+        "de": "z. B. http://192.168.1.2:8080",
+        "es": "p. ej. http://192.168.1.2:8080"
+      },
+      "required": false
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "api_key",
+      "type": "secret",
+      "label": {
+        "en": "Bouncer key",
+        "fr": "Clé de bouncer",
+        "de": "Bouncer-Schlüssel",
+        "es": "Clave de bouncer"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Printed once by cscli bouncers add gladys. Read-only: it only reads the decisions.",
+        "fr": "Affichée une fois par cscli bouncers add gladys. Lecture seule : elle ne lit que les décisions.",
+        "de": "Wird einmal von cscli bouncers add gladys angezeigt. Nur Lesen: Er liest nur die Entscheidungen.",
+        "es": "Se muestra una vez con cscli bouncers add gladys. Solo lectura: solo lee las decisiones."
+      },
+      "required": false
     },
     {
-      "key": "unit",
+      "key": "machine",
+      "type": "section",
+      "label": {
+        "en": "Alerts (optional)",
+        "fr": "Alertes (facultatif)",
+        "de": "Alarme (optional)",
+        "es": "Alertas (opcional)"
+      },
+      "description": {
+        "en": "A machine account reads the alerts (scenario, source, country) and can delete a decision. Create it with: cscli machines add gladys --password <password> -f /dev/null. Leave empty to follow the decisions only.",
+        "fr": "Un compte machine lit les alertes (scénario, source, pays) et peut supprimer une décision. Créez-le avec : cscli machines add gladys --password <mot de passe> -f /dev/null. Laissez vide pour ne suivre que les décisions.",
+        "de": "Ein Maschinenkonto liest die Alarme (Szenario, Quelle, Land) und kann eine Entscheidung löschen. Erstelle es mit: cscli machines add gladys --password <Passwort> -f /dev/null. Leer lassen, um nur den Entscheidungen zu folgen.",
+        "es": "Una cuenta de máquina lee las alertas (escenario, origen, país) y puede eliminar una decisión. Créela con: cscli machines add gladys --password <contraseña> -f /dev/null. Déjelo vacío para seguir solo las decisiones."
+      }
+    },
+    {
+      "key": "machine_id",
+      "type": "string",
+      "label": {
+        "en": "Machine login",
+        "fr": "Identifiant machine",
+        "de": "Maschinen-Login",
+        "es": "Usuario de máquina"
+      },
+      "placeholder": {
+        "en": "e.g. gladys",
+        "fr": "ex. gladys",
+        "de": "z. B. gladys",
+        "es": "p. ej. gladys"
+      },
+      "required": false
+    },
+    {
+      "key": "machine_password",
+      "type": "secret",
+      "label": {
+        "en": "Machine password",
+        "fr": "Mot de passe machine",
+        "de": "Maschinen-Passwort",
+        "es": "Contraseña de máquina"
+      },
+      "required": false
+    },
+    {
+      "key": "allow_unban",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Deleting decisions from scenes",
+        "fr": "Suppression de décisions par les scènes",
+        "de": "Löschen von Entscheidungen durch Szenen",
+        "es": "Eliminar decisiones desde escenas"
+      },
+      "description": {
+        "en": "Enables the scene action that unbans an address. Needs the machine account.",
+        "fr": "Active l'action de scène qui débannit une adresse. Demande le compte machine.",
+        "de": "Aktiviert die Szenen-Aktion, die eine Adresse entsperrt. Braucht das Maschinenkonto.",
+        "es": "Activa la acción de escena que desbloquea una dirección. Requiere la cuenta de máquina."
+      },
       "required": false,
-      "default": "celsius",
+      "default": "disabled",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "disabled",
+          "label": {
+            "en": "Disabled",
+            "fr": "Désactivée",
+            "de": "Deaktiviert",
+            "es": "Desactivada"
+          }
+        },
+        {
+          "value": "enabled",
+          "label": {
+            "en": "Enabled",
+            "fr": "Activée",
+            "de": "Aktiviert",
+            "es": "Activada"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "options",
+      "type": "section",
+      "label": {
+        "en": "Options",
+        "fr": "Options",
+        "de": "Optionen",
+        "es": "Opciones"
+      }
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de rafraîchissement",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "How often CrowdSec is read: only the changes, except once an hour.",
+        "fr": "À quelle fréquence CrowdSec est lu : seulement les changements, sauf une fois par heure.",
+        "de": "Wie oft CrowdSec gelesen wird: nur die Änderungen, außer einmal pro Stunde.",
+        "es": "Con qué frecuencia se lee CrowdSec: solo los cambios, salvo una vez por hora."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "60",
+      "options": [
+        {
+          "value": "30",
+          "label": {
+            "en": "30 seconds",
+            "fr": "30 secondes",
+            "de": "30 Sekunden",
+            "es": "30 segundos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "1 minute",
+            "fr": "1 minute",
+            "de": "1 Minute",
+            "es": "1 minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 minutes",
+            "fr": "2 minutes",
+            "de": "2 Minuten",
+            "es": "2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the names",
+        "fr": "Langue des noms",
+        "de": "Sprache der Namen",
+        "es": "Idioma de los nombres"
+      },
+      "description": {
+        "en": "Language of the feature names (set when a device is added) and of the scene results.",
+        "fr": "Langue des noms des fonctionnalités (fixés à l'ajout d'un appareil) et des résultats de scène.",
+        "de": "Sprache der Funktionsnamen (beim Anlegen eines Geräts festgelegt) und der Szenen-Ergebnisse.",
+        "es": "Idioma de los nombres de las funciones (fijados al añadir un dispositivo) y de los resultados de escena."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
       "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "decision_added",
+      "label": {
+        "en": "New local decision",
+        "fr": "Nouvelle décision locale",
+        "de": "Neue lokale Entscheidung",
+        "es": "Nueva decisión local"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "CrowdSec bans (or asks a captcha from) an address: a scenario fired, or a decision added by hand.",
+        "fr": "CrowdSec bannit une adresse (ou lui demande un captcha) : un scénario s'est déclenché, ou une décision a été ajoutée à la main.",
+        "de": "CrowdSec sperrt eine Adresse (oder verlangt ein Captcha): Ein Szenario hat ausgelöst, oder eine Entscheidung wurde von Hand hinzugefügt.",
+        "es": "CrowdSec bloquea una dirección (o le pide un captcha): se activó un escenario, o se añadió una decisión a mano."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "type",
           "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
+          "label": {
+            "en": "Remediation (empty: any)",
+            "fr": "Remédiation (vide : toutes)",
+            "de": "Maßnahme (leer: alle)",
+            "es": "Remediación (vacío: todas)"
+          },
           "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
+            {
+              "value": "ban",
+              "label": {
+                "en": "Ban",
+                "fr": "Bannissement",
+                "de": "Sperre",
+                "es": "Bloqueo"
+              }
+            },
+            {
+              "value": "captcha",
+              "label": {
+                "en": "Captcha",
+                "fr": "Captcha",
+                "de": "Captcha",
+                "es": "Captcha"
+              }
+            }
           ]
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "ip",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Address or range",
+            "fr": "Adresse ou plage",
+            "de": "Adresse oder Bereich",
+            "es": "Dirección o rango"
+          }
+        },
+        {
+          "key": "scope",
+          "type": "string",
+          "label": {
+            "en": "Scope (Ip, Range)",
+            "fr": "Portée (Ip, Range)",
+            "de": "Bereich (Ip, Range)",
+            "es": "Ámbito (Ip, Range)"
+          }
+        },
+        {
+          "key": "type",
+          "type": "string",
+          "label": {
+            "en": "Remediation (ban, captcha)",
+            "fr": "Remédiation (ban, captcha)",
+            "de": "Maßnahme (ban, captcha)",
+            "es": "Remediación (ban, captcha)"
+          }
+        },
+        {
+          "key": "scenario",
+          "type": "string",
+          "label": {
+            "en": "Scenario",
+            "fr": "Scénario",
+            "de": "Szenario",
+            "es": "Escenario"
+          }
+        },
+        {
+          "key": "origin",
+          "type": "string",
+          "label": {
+            "en": "Origin (crowdsec, cscli…)",
+            "fr": "Origine (crowdsec, cscli…)",
+            "de": "Herkunft (crowdsec, cscli…)",
+            "es": "Origen (crowdsec, cscli…)"
+          }
+        },
+        {
+          "key": "duration_minutes",
+          "type": "number",
+          "label": {
+            "en": "Duration (minutes)",
+            "fr": "Durée (minutes)",
+            "de": "Dauer (Minuten)",
+            "es": "Duración (minutos)"
+          }
+        },
+        {
+          "key": "country",
+          "type": "string",
+          "label": {
+            "en": "Country (if known)",
+            "fr": "Pays (si connu)",
+            "de": "Land (falls bekannt)",
+            "es": "País (si se conoce)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "alert_raised",
+      "label": {
+        "en": "New alert",
+        "fr": "Nouvelle alerte",
+        "de": "Neuer Alarm",
+        "es": "Nueva alerta"
+      },
+      "description": {
+        "en": "A scenario of CrowdSec fires on a source (needs the machine account), with or without a decision.",
+        "fr": "Un scénario de CrowdSec se déclenche sur une source (demande le compte machine), avec ou sans décision.",
+        "de": "Ein Szenario von CrowdSec löst bei einer Quelle aus (braucht das Maschinenkonto), mit oder ohne Entscheidung.",
+        "es": "Un escenario de CrowdSec se activa sobre un origen (requiere la cuenta de máquina), con o sin decisión."
+      },
+      "variables": [
+        {
+          "key": "scenario",
+          "type": "string",
+          "label": {
+            "en": "Scenario",
+            "fr": "Scénario",
+            "de": "Szenario",
+            "es": "Escenario"
+          }
+        },
+        {
+          "key": "ip",
+          "type": "string",
+          "label": {
+            "en": "Source address",
+            "fr": "Adresse source",
+            "de": "Quelladresse",
+            "es": "Dirección de origen"
+          }
+        },
+        {
+          "key": "scope",
+          "type": "string",
+          "label": {
+            "en": "Scope (Ip, Range)",
+            "fr": "Portée (Ip, Range)",
+            "de": "Bereich (Ip, Range)",
+            "es": "Ámbito (Ip, Range)"
+          }
+        },
+        {
+          "key": "country",
+          "type": "string",
+          "label": {
+            "en": "Country (if known)",
+            "fr": "Pays (si connu)",
+            "de": "Land (falls bekannt)",
+            "es": "País (si se conoce)"
+          }
+        },
+        {
+          "key": "as_name",
+          "type": "string",
+          "label": {
+            "en": "Network operator (AS)",
+            "fr": "Opérateur réseau (AS)",
+            "de": "Netzbetreiber (AS)",
+            "es": "Operador de red (AS)"
+          }
+        },
+        {
+          "key": "events_count",
+          "type": "number",
+          "label": {
+            "en": "Events",
+            "fr": "Événements",
+            "de": "Ereignisse",
+            "es": "Eventos"
+          }
+        },
+        {
+          "key": "decisions",
+          "type": "number",
+          "label": {
+            "en": "Decisions taken",
+            "fr": "Décisions prises",
+            "de": "Getroffene Entscheidungen",
+            "es": "Decisiones tomadas"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "get_status",
+      "label": {
+        "en": "State of CrowdSec",
+        "fr": "État de CrowdSec",
+        "de": "Zustand von CrowdSec",
+        "es": "Estado de CrowdSec"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Sums up CrowdSec for a message: decisions, alerts of the day, the latest ban, and a ready-made sentence.",
+        "fr": "Résume CrowdSec pour un message : décisions, alertes du jour, dernier bannissement, et une phrase toute prête.",
+        "de": "Fasst CrowdSec für eine Nachricht zusammen: Entscheidungen, Alarme des Tages, letzte Sperre und ein fertiger Satz.",
+        "es": "Resume CrowdSec para un mensaje: decisiones, alertas del día, el último bloqueo y una frase lista."
+      },
+      "timeout_seconds": 30,
+      "outputs": [
+        {
+          "key": "reachable",
+          "type": "boolean",
+          "label": {
+            "en": "Reachable",
+            "fr": "Joignable",
+            "de": "Erreichbar",
+            "es": "Accesible"
+          }
+        },
+        {
+          "key": "local_decisions",
+          "type": "number",
+          "label": {
+            "en": "Local decisions",
+            "fr": "Décisions locales",
+            "de": "Lokale Entscheidungen",
+            "es": "Decisiones locales"
+          }
+        },
+        {
+          "key": "community_decisions",
+          "type": "number",
+          "label": {
+            "en": "Community decisions",
+            "fr": "Décisions de la communauté",
+            "de": "Community-Entscheidungen",
+            "es": "Decisiones de la comunidad"
+          }
+        },
+        {
+          "key": "alerts_24h",
+          "type": "number",
+          "label": {
+            "en": "Alerts (24 h)",
+            "fr": "Alertes (24 h)",
+            "de": "Alarme (24 h)",
+            "es": "Alertas (24 h)"
+          }
+        },
+        {
+          "key": "last_ip",
+          "type": "string",
+          "label": {
+            "en": "Latest banned address",
+            "fr": "Dernière adresse bannie",
+            "de": "Zuletzt gesperrte Adresse",
+            "es": "Última dirección bloqueada"
+          }
+        },
+        {
+          "key": "last_scenario",
+          "type": "string",
+          "label": {
+            "en": "Last scenario",
+            "fr": "Dernier scénario",
+            "de": "Letztes Szenario",
+            "es": "Último escenario"
+          }
+        },
+        {
+          "key": "sentence",
+          "type": "string",
+          "label": {
+            "en": "Sentence",
+            "fr": "Phrase",
+            "de": "Satz",
+            "es": "Frase"
+          }
+        }
+      ]
+    },
+    {
+      "key": "delete_decision",
+      "label": {
+        "en": "Delete a decision (unban)",
+        "fr": "Supprimer une décision (débannir)",
+        "de": "Entscheidung löschen (entsperren)",
+        "es": "Eliminar una decisión (desbloquear)"
+      },
+      "description": {
+        "en": "Deletes every decision on an address or a range. Must be enabled in the configuration, with a machine account.",
+        "fr": "Supprime toutes les décisions sur une adresse ou une plage. À activer dans la configuration, avec un compte machine.",
+        "de": "Löscht alle Entscheidungen zu einer Adresse oder einem Bereich. Muss in der Konfiguration aktiviert sein, mit Maschinenkonto.",
+        "es": "Elimina todas las decisiones sobre una dirección o un rango. Debe activarse en la configuración, con una cuenta de máquina."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "key": "ip",
+          "type": "string",
+          "label": {
+            "en": "Address or range",
+            "fr": "Adresse ou plage",
+            "de": "Adresse oder Bereich",
+            "es": "Dirección o rango"
+          },
+          "placeholder": {
+            "en": "e.g. 203.0.113.7",
+            "fr": "ex. 203.0.113.7",
+            "de": "z. B. 203.0.113.7",
+            "es": "p. ej. 203.0.113.7"
+          },
           "required": true
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "deleted",
+          "type": "number",
+          "label": {
+            "en": "Decisions deleted",
+            "fr": "Décisions supprimées",
+            "de": "Gelöschte Entscheidungen",
+            "es": "Decisiones eliminadas"
+          }
+        },
+        {
+          "key": "sentence",
+          "type": "string",
+          "label": {
+            "en": "Sentence",
+            "fr": "Phrase",
+            "de": "Satz",
+            "es": "Frase"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "decisions",
+      "label": {
+        "en": "CrowdSec decisions",
+        "fr": "Décisions CrowdSec",
+        "de": "CrowdSec-Entscheidungen",
+        "es": "Decisiones de CrowdSec"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Active decisions, alerts of the day, and the latest banned addresses.",
+        "fr": "Décisions actives, alertes du jour, et dernières adresses bannies.",
+        "de": "Aktive Entscheidungen, Alarme des Tages und zuletzt gesperrte Adressen.",
+        "es": "Decisiones activas, alertas del día y últimas direcciones bloqueadas."
+      },
+      "icon": "shield",
+      "action_timeout_seconds": 30
     }
   ]
 }
