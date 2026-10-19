@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-19
+
 ### Added
 
 - A "CrowdSec" device: reachable, active local decisions, community blocklist
@@ -25,4 +27,5 @@ the notes of the version's GitHub Release.
   addresses with their scenario and time left.
 - "Test the connection" action, texts in English, French, German and Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-crowdsec/commits/main
+[Unreleased]: https://github.com/guim31/gladys-crowdsec/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-crowdsec/releases/tag/v1.0.0
