@@ -23,7 +23,7 @@ export const SCENE_ACTIONS = {
     const language = hub.config.language;
     const text = REPORT_TEXT[language] ?? REPORT_TEXT.en;
     const latest = hub.latestDecisions(1)[0];
-    if (hub.error || !hub.reachable) {
+    if (hub.failing || !hub.reachable) {
       // "CrowdSec does not answer" is an answer: the scene goes on with it.
       return {
         reachable: false,

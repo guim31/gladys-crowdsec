@@ -132,7 +132,7 @@ una lectura (un gran escaneo), solo las 20 más recientes activan una escena.
   comunidad, 5 alerta(s) en 24 h (203.0.113.7, ssh-bf).»
 - **Eliminar una decisión (desbloquear)**: elimina todas las decisiones sobre
   una dirección (`203.0.113.7`) o un rango (`203.0.113.0/24`), también las de
-  la lista de la comunidad (vuelven en la siguiente descarga de la lista). El
+  la lista de la comunidad (vuelven en la siguiente descarga de la lista). Un rango elimina las decisiones que contiene; un bloqueo sobre un rango entero que contiene la dirección se mantiene. El
   campo de dirección acepta las variables del desencadenante. **Desactivada por
   defecto**: active «Eliminar decisiones desde escenas» en la configuración,
   con una cuenta de máquina. Salidas: el número de decisiones eliminadas y una

@@ -124,7 +124,7 @@ scan), only the 20 latest fire a scene.
   24 h (203.0.113.7, ssh-bf)."
 - **Delete a decision (unban)**: deletes every decision on an address
   (`203.0.113.7`) or a range (`203.0.113.0/24`), from the community blocklist
-  too (it comes back at the next pull of the blocklist). The address field
+  too (it comes back at the next pull of the blocklist). A range deletes the decisions inside it; a ban on a whole range that contains the address is left alone. The address field
   accepts the variables of the trigger. **Disabled by default**: enable
   "Deleting decisions from scenes" in the configuration, with a machine
   account. Outputs: the number of decisions deleted and a sentence.

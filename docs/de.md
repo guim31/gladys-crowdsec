@@ -132,7 +132,7 @@ in einer Abfrage (ein großer Scan), lösen nur die 20 neuesten eine Szene aus.
   Community-Entscheidung(en), 5 Alarm(e) in 24 h (203.0.113.7, ssh-bf).“
 - **Entscheidung löschen (entsperren)**: löscht alle Entscheidungen zu einer
   Adresse (`203.0.113.7`) oder einem Bereich (`203.0.113.0/24`), auch die der
-  Community-Sperrliste (sie kommen beim nächsten Abruf der Liste zurück). Das
+  Community-Sperrliste (sie kommen beim nächsten Abruf der Liste zurück). Ein Bereich löscht die Entscheidungen darin; eine Sperre auf einem ganzen Bereich, der die Adresse enthält, bleibt bestehen. Das
   Adressfeld akzeptiert die Variablen des Auslösers. **Standardmäßig
   deaktiviert**: Aktiviere „Löschen von Entscheidungen durch Szenen“ in der
   Konfiguration, mit einem Maschinenkonto. Ausgaben: die Zahl der gelöschten

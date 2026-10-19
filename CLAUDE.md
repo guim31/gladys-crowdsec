@@ -264,9 +264,16 @@ rejouée par `crowdsec -dsn file://… -type syslog -no-api`), le 19/10/2026.
   celles dont la portée est `lists:…` ou `Community blocklist`. Chaque alerte porte ses `events` (lourds) : le hub
   ne garde que l'essentiel, lit la dernière heure à chaque cycle et 24 h une fois par heure. Le pays (`source.cn`)
   n'existe que dans les alertes, et seulement avec le parser `geoip-enrich` : pas de pays sans compte machine.
-- `DELETE /v1/decisions?ip=…` (ou `range=…`) répond `{"nbDeleted":"1"}` (une **chaîne**).
-- Nouveauté = id plus grand que le dernier vu (`/data`) ; ids revenus en arrière à la lecture complète = base
-  remise à zéro, on repart du maximum lu. Pas d'événement au tout premier démarrage. 20 événements par lecture au
+- `DELETE /v1/decisions?ip=…` (ou `range=…`) répond `{"nbDeleted":"1"}` (une **chaîne**). Par défaut
+  (`contains=true`) il supprime les décisions qui **contiennent** la cible : 0 pour une plage, et toute une plage
+  bannie pour une adresse. Le client envoie `contains=false` (vérifié sur la 1.8.1 : 0 contre 3 décisions).
+- **Déduplication** : sans `dedup=false`, le flux ne donne qu'une décision par adresse (la plus longue). Un ban
+  local derrière un ban CAPI de plusieurs jours n'arriverait jamais (vérifié : 2 décisions sur 3). Le client
+  envoie `dedup=false`.
+- Nouveauté : toute décision locale d'un delta (le flux ne donne que les créées depuis l'appel précédent) ; à une
+  lecture complète, seulement celles au-dessus du dernier id vu (`/data`). Un delta aux ids inférieurs à la marque =
+  base remise à zéro. Alertes : au-dessus de la marque à la première lecture, puis toute alerte pas encore vue (une
+  alerte au `start_at` ancien arrive en retard mais arrive ; lecture courante sur 3 h). Pas d'événement au tout premier démarrage. 20 événements par lecture au
   plus.
 - Journaux : jamais d'adresse complète au niveau info (`maskAddress`) ; un nouveau bannissement s'écrit en debug.
 - `test/fixtures/crowdsec/stream-community.json` est écrit à la main (une instance de test hors ligne n'a pas de

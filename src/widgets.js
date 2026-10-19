@@ -103,7 +103,7 @@ async function get(hub, { language = 'en' }) {
     });
   }
 
-  if (hub.error) {
+  if (hub.failing) {
     components.push({
       type: 'text',
       variant: 'body',
@@ -137,7 +137,7 @@ async function get(hub, { language = 'en' }) {
       });
     }
     components.push({ type: 'status', items });
-  } else if (!hub.error) {
+  } else if (!hub.failing) {
     components.push({ type: 'text', variant: 'body', text: pick(TEXT.empty, language) });
   }
 
@@ -149,7 +149,7 @@ async function get(hub, { language = 'en' }) {
     action: { key: ACTIONS.REFRESH },
   });
 
-  return { ttl_seconds: hub.error ? 30 : 60, components };
+  return { ttl_seconds: hub.failing ? 30 : 60, components };
 }
 
 async function action(hub, { actionKey }) {

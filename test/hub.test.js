@@ -81,7 +81,7 @@ test('the states at once when the device is added, then only the changes', async
   assert.equal(world.fake.states.length, before, 'nothing changed, nothing sent');
   // The second read is a delta of the stream, not the full list.
   const streams = world.crowdsec.requests.filter((r) => r.url.includes('/stream'));
-  assert.match(streams.at(-1).url, /\/v1\/decisions\/stream$/);
+  assert.match(streams.at(-1).url, /\/v1\/decisions\/stream\?dedup=false$/);
 
   world.crowdsec.addCommunity(3);
   await world.hub.pollNow();
@@ -182,6 +182,67 @@ test('another LAPI address starts afresh: no event for what it already has', asy
   assert.equal(second.fake.sceneEvents.length, 0);
 });
 
+test('the stream is read without deduplication: a local ban behind a community one counts', async (t) => {
+  const world = await createWorld({ machine: false });
+  t.after(() => world.app.stop());
+  const streams = world.crowdsec.requests.filter((r) => r.url.includes('/stream'));
+  assert.match(streams[0].url, /\/v1\/decisions\/stream\?dedup=false&startup=true$/);
+  world.crowdsec.addDecision({ value: '198.18.0.9', origin: 'CAPI' });
+  world.crowdsec.addDecision({ value: '198.18.0.9' });
+  await world.hub.pollNow();
+  assert.equal(events(world, TRIGGERS.DECISION_ADDED).length, 1);
+  assert.equal(world.hub.local.size, 5);
+  assert.equal(world.hub.community.size, 1);
+});
+
+test('a delta: created then deleted is not news; ids reset by a new database still are', async (t) => {
+  const world = await createWorld({ machine: false });
+  t.after(() => world.app.stop());
+  const gone = world.crowdsec.addDecision({ value: '203.0.113.80' });
+  world.crowdsec.request = ((request) => async (url, options) => {
+    const answer = await request(url, options);
+    if (!url.includes('startup')) {
+      const body = JSON.parse(answer.body);
+      body.deleted = [{ ...gone, duration: '-1s' }];
+      return { ...answer, body: JSON.stringify(body) };
+    }
+    return answer;
+  })(world.crowdsec.request);
+  world.hub.client.request = world.crowdsec.request;
+  await world.hub.pollNow();
+  assert.equal(events(world, TRIGGERS.DECISION_ADDED).length, 0);
+  assert.equal(world.hub.local.has(gone.id), false);
+
+  // CrowdSec reinstalled: ids start again from 1.
+  world.crowdsec.nextId = 1;
+  world.crowdsec.decisions.delete(1);
+  world.crowdsec.addDecision({ value: '203.0.113.81' });
+  await world.hub.pollNow();
+  assert.deepEqual(
+    events(world, TRIGGERS.DECISION_ADDED).map((e) => e.data.ip),
+    ['203.0.113.81'],
+  );
+  assert.equal(world.hub.saved.lastDecisionId, 1);
+});
+
+test('an alert that started hours before it was sent is still announced', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  world.crowdsec.attack({ value: '203.0.113.90' });
+  world.crowdsec.attack({ value: '203.0.113.91' });
+  // The first one started long ago: the fake hands it out one read later.
+  const [newer, older] = world.crowdsec.alerts;
+  older.start_at = new Date(world.clock.time - 2 * 3600_000).toISOString();
+  world.crowdsec.alerts = world.crowdsec.alerts.filter((a) => a !== older);
+  await world.hub.pollNow();
+  world.crowdsec.alerts.unshift(older);
+  await world.hub.pollNow();
+  assert.deepEqual(
+    events(world, TRIGGERS.ALERT_RAISED).map((e) => e.data.ip),
+    [newer.source.value, older.source.value],
+  );
+});
+
 test('a flood of decisions fires at most MAX_EVENTS_PER_READ events', async (t) => {
   const world = await createWorld({ machine: false });
   t.after(() => world.app.stop());
@@ -201,8 +262,9 @@ test('the LAPI unreachable: one failed read tolerated, then reachable 0, back wi
   world.crowdsec.failure = 'down';
   await world.hub.pollNow();
   assert.equal(state(world, KEYS.REACHABLE), 1);
-  assert.equal(world.fake.connectionStatus.connected, false);
+  assert.equal(world.fake.connectionStatus.connected, true, 'a restart of CrowdSec is tolerated');
   await world.hub.pollNow();
+  assert.equal(world.fake.connectionStatus.connected, false);
   assert.equal(state(world, KEYS.REACHABLE), 0);
   assert.equal(world.fake.transports.at(-1).transport, 'unreachable');
   world.crowdsec.failure = null;
@@ -315,6 +377,7 @@ test('the widget when CrowdSec does not answer, and with no decision', async (t)
   assert.ok(content.components.some((c) => c.type === 'text' && /nobody/.test(c.text)));
   world.crowdsec.failure = 'down';
   await world.hub.pollNow();
+  await world.hub.pollNow();
   content = (await world.fake.widgetGet(WIDGET_KEY)).data.content;
   assert.ok(content.components.some((c) => c.type === 'text' && /does not answer/.test(c.text)));
   assert.deepEqual(validateWidgetContent(content), []);
@@ -336,6 +399,7 @@ test('scene action: the state of CrowdSec in a sentence, unreachable as an answe
       'CrowdSec : 4 décision(s) locale(s), 0 décision(s) de la communauté, 5 alerte(s) en 24 h (192.0.2.50, manual test).',
   });
   world.crowdsec.failure = 'down';
+  await world.hub.pollNow();
   world.clock.advance(60_000);
   const down = await world.fake.sceneAction('get_status');
   assert.equal(down.data.outputs.reachable, false);
@@ -364,11 +428,13 @@ test('scene action: unban refused unless enabled, with a machine account and an 
     deleted: 2,
     sentence: 'CrowdSec: 2 decision(s) deleted on 203.0.113.7.',
   });
+  await new Promise((resolve) => setImmediate(resolve));
+  await world.hub.polling;
   assert.equal(world.hub.local.size, 2, 'read again after the deletion');
   ack = await world.fake.sceneAction('delete_decision', { ip: '198.51.100.0/24' });
   assert.equal(ack.data.outputs.deleted, 1);
   const deletes = world.crowdsec.requests.filter((r) => r.method === 'DELETE');
-  assert.match(deletes.at(-1).url, /\?range=198\.51\.100\.0%2F24$/);
+  assert.match(deletes.at(-1).url, /\?range=198\.51\.100\.0%2F24&contains=false$/);
 });
 
 test('"Test the connection" sums up CrowdSec in the four languages', async (t) => {

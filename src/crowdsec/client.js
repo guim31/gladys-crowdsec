@@ -2,13 +2,13 @@
 // CrowdSec Local API (LAPI) client, checked against CrowdSec v1.8.1:
 //
 //   bouncer key (header X-Api-Key), read-only:
-//     GET /v1/decisions/stream?startup=true   every active decision
+//     GET /v1/decisions/stream?dedup=false&startup=true   every active decision
 //     GET /v1/decisions/stream                what changed since the last call
 //                                             of this bouncer: { new, deleted }
 //   machine account (optional):
 //     POST /v1/watchers/login                 { machine_id, password } → JWT
 //     GET  /v1/alerts?since=24h&include_capi=false
-//     DELETE /v1/decisions?ip=… (or range=…)  → { nbDeleted: "1" }
+//     DELETE /v1/decisions?ip=…&contains=false (or range=…) → { nbDeleted: "1" }
 //
 // A decision is { id, origin, type, scope, value, scenario, duration, uuid };
 // `duration` is the time left, in Go notation ("3h59m50s", "-4s" once over).
@@ -252,9 +252,14 @@ export class CrowdsecClient {
    * @returns {Promise<{ added: object[], deleted: object[] }>}
    */
   async stream({ startup = false } = {}) {
-    const data = await this.send(`/v1/decisions/stream${startup ? '?startup=true' : ''}`, {
-      headers: { 'x-api-key': this.apiKey },
-    });
+    // dedup=false: by default the LAPI sends one decision per address (the
+    // longest), hiding a local ban behind a community one.
+    const data = await this.send(
+      `/v1/decisions/stream?dedup=false${startup ? '&startup=true' : ''}`,
+      {
+        headers: { 'x-api-key': this.apiKey },
+      },
+    );
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       throw new CrowdsecError(ERROR_KINDS.NOT_CROWDSEC, 'The answer is not a decision stream');
     }
@@ -324,8 +329,13 @@ export class CrowdsecClient {
    * @returns {Promise<number>} how many were deleted
    */
   async deleteDecisions({ ip, range }) {
+    // contains=false: the decisions on this address, or inside this range.
+    // The default (true) deletes the ones containing it instead: nothing for
+    // a range, and a whole range ban for an address.
     const query = ip ? `ip=${encodeURIComponent(ip)}` : `range=${encodeURIComponent(range)}`;
-    const data = await this.machineSend(`/v1/decisions?${query}`, { method: 'DELETE' });
+    const data = await this.machineSend(`/v1/decisions?${query}&contains=false`, {
+      method: 'DELETE',
+    });
     const count = Number(data?.nbDeleted);
     return Number.isFinite(count) ? count : 0;
   }

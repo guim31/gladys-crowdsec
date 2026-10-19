@@ -134,7 +134,7 @@ déclenchent une scène.
 - **Supprimer une décision (débannir)** : supprime toutes les décisions sur une
   adresse (`203.0.113.7`) ou une plage (`203.0.113.0/24`), y compris celles de
   la liste de la communauté (elles reviennent à la prochaine récupération de la
-  liste). Le champ d'adresse accepte les variables du déclencheur.
+  liste). Une plage supprime les décisions qu'elle contient ; un bannissement sur une plage entière qui contient l'adresse reste en place. Le champ d'adresse accepte les variables du déclencheur.
   **Désactivée par défaut** : activez « Suppression de décisions par les
   scènes » dans la configuration, avec un compte machine. Sorties : le nombre
   de décisions supprimées et une phrase.

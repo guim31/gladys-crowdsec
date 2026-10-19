@@ -203,6 +203,8 @@ export class CrowdsecHub {
               now: this.now,
             })
           : null;
+      // A read of the previous client in progress must not be reused.
+      this.polling = null;
       if (sameLapi) {
         // Only the machine account changed: the decisions stay, but the
         // stream of the new client starts again from a full read.
@@ -326,7 +328,7 @@ export class CrowdsecHub {
   async readAlerts(client, now) {
     const full = this.alertsFullAt === 0 || now - this.alertsFullAt >= this.timings.fullSyncMs;
     try {
-      const list = await client.alerts(full ? '24h' : '1h');
+      const list = await client.alerts(full ? '24h' : '3h');
       if (this.alertsError) {
         logger.info('CrowdSec alerts can be read again');
       }
@@ -347,6 +349,15 @@ export class CrowdsecHub {
   /** Whether the LAPI counts as reachable (after a few failed reads in a row). */
   get reachable() {
     return this.synced && this.saved.reachable !== false;
+  }
+
+  /**
+   * The failure to show: after FAILURES_BEFORE_UNREACHABLE reads in a row (a
+   * restart of CrowdSec goes unnoticed, as for "Reachable"), at once when
+   * nothing was ever read (wrong address or key).
+   */
+  get failing() {
+    return this.error !== null && (this.failures >= FAILURES_BEFORE_UNREACHABLE || !this.synced);
   }
 
   /** Whether the alerts count is known (machine account that works). */
@@ -376,10 +387,6 @@ export class CrowdsecHub {
       this.community = new Map();
       this.fullSyncAt = now;
     }
-    for (const decision of delta.deleted) {
-      this.local.delete(decision.id);
-      this.community.delete(decision.id);
-    }
     const added = [];
     let maxId = 0;
     for (const decision of delta.added) {
@@ -393,6 +400,13 @@ export class CrowdsecHub {
         this.local.set(decision.id, decision);
         added.push(decision);
       }
+    }
+    // After the additions: a decision created then deleted between two reads
+    // comes in both lists, and is gone.
+    const deletedIds = new Set(delta.deleted.map((decision) => decision.id));
+    for (const id of deletedIds) {
+      this.local.delete(id);
+      this.community.delete(id);
     }
     // The stream says when a decision expires; this covers a lost delta.
     for (const [id, decision] of this.local) {
@@ -410,17 +424,21 @@ export class CrowdsecHub {
     }
     this.synced = true;
 
-    // New local decisions: the ones above the highest id already seen.
+    // New local decisions: a delta only holds decisions created since the
+    // previous read; a full read (start, every hour) the ones above the
+    // highest id already seen (what was added during a restart).
     const fresh = initialized
-      ? added.filter((decision) => decision.id > saved.lastDecisionId).sort((a, b) => a.id - b.id)
+      ? added
+          .filter((decision) => !deletedIds.has(decision.id))
+          .filter((decision) => !startup || decision.id > saved.lastDecisionId)
+          .sort((a, b) => a.id - b.id)
       : [];
-    if (startup && maxId > 0 && maxId < saved.lastDecisionId) {
-      // The database of CrowdSec was reset: ids start again from 1.
-      logger.info('CrowdSec decision ids went back: database reset?');
+    if (!startup && maxId > 0 && maxId < saved.lastDecisionId) {
+      // New decisions below the mark: the database of CrowdSec was reset.
+      logger.debug('CrowdSec decision ids went back: database reset');
       saved.lastDecisionId = maxId;
       dirty = true;
-    }
-    if (maxId > saved.lastDecisionId) {
+    } else if (maxId > saved.lastDecisionId) {
       saved.lastDecisionId = maxId;
       dirty = true;
     }
@@ -430,6 +448,8 @@ export class CrowdsecHub {
     let freshAlerts = [];
     if (alerts) {
       const alertsBefore = JSON.stringify([...this.alerts.keys()]);
+      const seen = new Set(this.alerts.keys());
+      const firstRead = this.alertsReadAt === 0;
       if (alerts.full) {
         this.alerts = new Map();
         this.alertsFullAt = now;
@@ -445,16 +465,27 @@ export class CrowdsecHub {
         }
       }
       this.alertsReadAt = now;
+      // New alerts: above the highest id already seen at the first read of
+      // this process, then any alert not seen yet — an alert that started
+      // long before it was sent (slow scenario, log backlog) comes late but
+      // comes. The age limit keeps an alert leaving the window from coming
+      // back as new.
       if (saved.alertsInitialized) {
         freshAlerts = alerts.list
-          .filter((alert) => alert.id > saved.lastAlertId)
+          .filter((alert) =>
+            firstRead
+              ? alert.id > saved.lastAlertId
+              : !seen.has(alert.id) &&
+                (alert.id > saved.lastAlertId ||
+                  (alert.startAt ?? now) > now - ALERT_WINDOW_MS / 2),
+          )
           .sort((a, b) => a.id - b.id);
       }
       if (alerts.full && maxAlertId > 0 && maxAlertId < saved.lastAlertId) {
+        // Every alert of the day is below the mark: the database was reset.
         saved.lastAlertId = maxAlertId;
         dirty = true;
-      }
-      if (maxAlertId > saved.lastAlertId) {
+      } else if (maxAlertId > saved.lastAlertId) {
         saved.lastAlertId = maxAlertId;
         dirty = true;
       }
@@ -707,7 +738,7 @@ export class CrowdsecHub {
     if (!this.config.apiKey) {
       return { connected: false, message: CONNECTION_TEXT.noKey };
     }
-    if (this.error) {
+    if (this.failing) {
       return { connected: false, message: ERROR_TEXT[this.error.kind] };
     }
     return { connected: true };
@@ -796,7 +827,9 @@ export class CrowdsecHub {
     }
     logger.info(`Scene action: ${deleted} decision(s) deleted on ${maskAddress(value)}`);
     logger.debug(`Decisions deleted on ${value}`);
-    await this.pollNow(); // the stream reports the deletion: counts and widget
+    // The stream reports the deletion (counts, widget): not awaited, the scene
+    // has its answer.
+    this.pollNow().catch((err) => logger.warn(`Reading after the deletion failed: ${err.message}`));
     return { deleted, value };
   }
 }
