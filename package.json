@@ -1,6 +1,6 @@
 {
   "name": "gladys-crowdsec",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "CrowdSec in Gladys Assistant: decisions, alerts, scenes and a dashboard widget.",
   "type": "module",
